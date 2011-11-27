@@ -3,10 +3,13 @@ package org.knuth.jsnake.game;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
 import javax.swing.JPanel;
+import javax.swing.Timer;
 
 
 public class Game extends JPanel implements KeyListener, Runnable{
@@ -114,6 +117,9 @@ public class Game extends JPanel implements KeyListener, Runnable{
 	public void playAgain(){
 		if (roundEnd){
 			this.score = 0;
+			this.snake = new SnakeHead();
+			this.prey = new Prey(this.getSize().height, this.getSize().width, 10);
+			this.roundEnd = false;
 		}
 	}
 	
@@ -140,8 +146,26 @@ public class Game extends JPanel implements KeyListener, Runnable{
 			}
 		}
 		repaint();
+		
+		// Wait some Time to restart the Game:
+		Timer t = new Timer(1000, new ActionListener() {
+			/**
+			 * Do it off the Render/Logic Thread so the 
+			 *  "Ready ..."-message get's probably painted!
+			 */
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				playAgain();
+				repaint();
+			}
+		});
+		t.setRepeats(false);
+		t.start();
+		
 		Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
 	}
+	
+	
 	
 	/**
 	 * Double-Buffer for smooth drawing
@@ -161,6 +185,7 @@ public class Game extends JPanel implements KeyListener, Runnable{
 	public void keyReleased(KeyEvent e) {
 		if (!th.isAlive()){
 			// If the Thread is not alive yet, start it:
+			th = new Thread(this);
 			th.start();
 		}
 		if (e.getKeyCode() == KeyEvent.VK_UP){
