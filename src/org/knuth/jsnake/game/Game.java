@@ -34,6 +34,8 @@ public class Game extends JPanel implements KeyListener, Runnable{
 	private SnakeHead snake;
 	/** The Pray you need to hunt down */
 	private Prey prey;
+	/** Manages the High-Scores for the Game */
+	private Highscore highscore;
 	
 	/**
 	 * Creates a new Snake Game
@@ -47,6 +49,7 @@ public class Game extends JPanel implements KeyListener, Runnable{
 		roundEnd = false;
 		snake = new SnakeHead();
 		prey = new Prey(this.getSize().height, this.getSize().width, 10);
+		highscore = Highscore.INSTANCE;
 		// Initialize the Thread:
 		th = new Thread(this);
 	}
@@ -62,6 +65,7 @@ public class Game extends JPanel implements KeyListener, Runnable{
 		this.setForeground(Color.black);
 		// Paint the Score:
 		g.drawString("Score: "+this.score, 15, 15);
+		g.drawString("High-Score: "+this.highscore.getHighscore(), 100, 15);
 		// Paint Wait:
 		if (!th.isAlive()){
 			g.drawString("Ready when you are... Press a Direction", 200, 200);
@@ -69,6 +73,7 @@ public class Game extends JPanel implements KeyListener, Runnable{
 		if (roundEnd){	
 			g.drawString("Game Over!", 200, 200);
 			g.drawString("Score: "+score, 200, 220);
+			if (checkHighscore(score)) g.drawString("New Highscore!", 200, 240);
 		}
 		// Check collisions:
 		this.collision();
@@ -129,6 +134,19 @@ public class Game extends JPanel implements KeyListener, Runnable{
 	 */
 	public long getScore(){
 		return score;
+	}
+	
+	/**
+	 * Check if the current score is a new Highscore and
+	 *  if so, save it.
+	 * @param score The current Score.
+	 * @return wether it is a new Highscore or not.
+	 */
+	private boolean checkHighscore(long score){
+		if (score > this.highscore.getHighscore()){
+			this.highscore.writeHighscore(score);
+			return true;
+		} else return false;
 	}
 	
 	/**
